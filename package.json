@@ -1,0 +1,42 @@
+{
+  "name": "d3-voronoi-map-tween",
+  "version": "0.0.1",
+  "description": "D3 plugin allowing interpolation from one d3-voronoi-map to another",
+  "keywords": [
+    "d3",
+    "d3-module",
+    "voronoi",
+    "diagram",
+    "tesselation",
+    "transition",
+    "animation"
+  ],
+  "license": "BSD-3-Clause",
+  "author": " Kcnarf <fl.franck.lebeau@gmail.com>",
+  "main": "build/d3-voronoi-map-tween.js",
+  "jsnext:main": "index",
+  "homepage": "https://github.com/Kcnarf/d3-voronoi-map-tween#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kcnarf/d3-voronoi-map-tween.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Kcnarf/d3-voronoi-map-tween/issues"
+  },
+  "scripts": {
+    "build": "rm -rf build && mkdir build && rollup -c ./rollup.config.js",
+    "pretest": "yarn run build",
+    "test": "tape 'test/**/*-test.js'",
+    "precommit": "yarn run test && uglifyjs build/d3-voronoi-map-tween.js -c -m -o build/d3-voronoi-map-tween.min.js",
+    "prepublish": "zip -j build/d3-voronoi-map-tween.zip -- LICENSE README.md build/d3-voronoi-map-tween.js build/d3-voronoi-map-tween.min.js"
+  },
+  "devDependencies": {
+    "rollup": "0.27",
+    "tape": "4",
+    "uglify-js": "~>2.6.0"
+  },
+  "dependencies": {
+    "d3-weighted-voronoi": "1.*",
+    "d3-voronoi-map": "2.*"
+  }
+}
