@@ -66,7 +66,7 @@
         }
 
         // [STEP 1] interpolate each coords and weights
-        var interpolatedSites = siteTweenData.map((std) => {
+        var interpolatedSites = siteTweenData.map(function (std) {
           return {
             key: std.key,
             startingData: std.startingData,
@@ -114,18 +114,22 @@
 
       var startingPolygons = startingVoronoiMapSimulation.state().polygons,
         endingPolygons = endingVoronoiMapSimulation.state().polygons,
-        startingSites = startingPolygons.map((p) => p.site),
-        endingSites = endingPolygons.map((p) => p.site);
+        startingSites = startingPolygons.map(function (p) {
+          return p.site;
+        }),
+        endingSites = endingPolygons.map(function (p) {
+          return p.site;
+        });
       var k;
 
       startingSiteByKey = {};
-      startingSites.forEach((s) => {
+      startingSites.forEach(function (s) {
         k = key(s.originalObject.data.originalData);
         startingSiteByKey[k] = s;
         allSiteKeys.add(k);
       });
       endingSiteByKey = {};
-      endingSites.forEach((s) => {
+      endingSites.forEach(function (s) {
         k = key(s.originalObject.data.originalData);
         endingSiteByKey[k] = s;
         allSiteKeys.add(k);
@@ -146,7 +150,7 @@
         tweenType;
       //find correspondance between starting and ending cells/sites/data; handle entering and exiting cells
       siteTweenData = [];
-      allSiteKeys.forEach((k) => {
+      allSiteKeys.forEach(function (k) {
         startingSite = startingSiteByKey[k];
         endingSite = endingSiteByKey[k];
         if (startingSite && endingSite) {
@@ -223,7 +227,7 @@
       var polygon = null;
 
       // [STEP 1] find the starting cell where the entering/exiting site/data comes in/out
-      polygons.forEach((p) => {
+      polygons.forEach(function (p) {
         if (!polygon) {
           if (d3.polygonContains(p, [site.x, site.y])) {
             polygon = p;
