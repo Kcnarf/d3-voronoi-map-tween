@@ -23,6 +23,7 @@ Available only for **d3-voronoi-map v2**.
 
 ## Installing
 
+<!--
 If you use NPM, `npm install d3-voronoi-map-tween`. Otherwise, load `https://rawcdn.githack.com/Kcnarf/d3-voronoi-map-tween/v0.0.1/build/d3-voronoi-treemap.js` (or its `d3-voronoi-map-tween.min.js` version) to make it available in AMD, CommonJS, or vanilla environments. In vanilla, you must load the [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi) and [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) plugins prioir to this one, and a d3 global is exported:
 
 ```html
@@ -34,6 +35,7 @@ If you use NPM, `npm install d3-voronoi-map-tween`. Otherwise, load `https://raw
   var voronoiMapTween = d3.voronoiMapTween();
 </script>
 ```
+-->
 
 If you're interested in the latest developments, you can use the master build, available throught:
 
