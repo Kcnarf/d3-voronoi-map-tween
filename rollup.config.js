@@ -1,6 +1,5 @@
 var globals = {
   'd3-weighted-voronoi': 'd3',
-  'd3-voronoi-map': 'd3',
 };
 
 export default {
