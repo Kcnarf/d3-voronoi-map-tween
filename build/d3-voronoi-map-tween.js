@@ -1,37 +1,41 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-weighted-voronoi')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'd3-weighted-voronoi'], factory) :
-  (factory((global.d3 = global.d3 || {}),global.d3));
-}(this, function (exports,d3WeightedVoronoi) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-weighted-voronoi'), require('d3-polygon')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'd3-weighted-voronoi', 'd3-polygon'], factory) :
+  (factory((global.d3 = global.d3 || {}),global.d3,global.d3));
+}(this, function (exports,d3WeightedVoronoi,d3Polygon) { 'use strict';
 
   const ENTER_TWEEN_TYPE = 'enter'; // datum not in starting data, but in ending data; adds a cell to the starting Voronoï tessellation
   const UPDATE_TWEEN_TYPE = 'update'; // datum in starting data and in ending data; the corresponding cell in starting Voronoï tessellation evolves
   const EXIT_TWEEN_TYPE = 'exit'; // datum in starting data, but not in ending data; deletes a cell from the starting Voronoï tessellation
 
-  function voronoiMapTween() {
+  function voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMapSimulation) {
     //begin: constants
-    var DEFAULT_IDENTIFIER_ACCESSOR = function (d) {
+    const DEFAULT_IDENTIFIER_ACCESSOR = function (d) {
       return d.id;
     }; // d identified with its 'id' attribute
-    var X_ACCESSOR = function (d) {
+    const INTERPOLATED_X_ACCESSOR = function (d) {
       return d.interpolatedX;
-    }; // x accessor of interpolated data
-    var Y_ACCESSOR = function (d) {
+    }; // x-accessor of interpolated data
+    const INTERPOLATED_Y_ACCESSOR = function (d) {
       return d.interpolatedY;
-    }; // y accessor of interpolated data
-    var WEIGHT_ACCESSOR = function (d) {
+    }; // y-accessor of interpolated data
+    const INTERPOLATED_WEIGHT_ACCESSOR = function (d) {
       return d.interpolatedWeight;
-    }; // weight accessor of interpolated data
+    }; // weight-accessor of interpolated data
     //end: constants
 
     //begin: imputs
     var startingKey = DEFAULT_IDENTIFIER_ACCESSOR; // used to identify starting data; used when maping starting data and ending data
     var endingKey = DEFAULT_IDENTIFIER_ACCESSOR; // used to identify ending data; used when maping starting data and ending data
-    var startingVoronoiMapSimulation, endingVoronoiMapSimulation;
+    var startingVoronoiMapSimulation = _startingVoronoiMapSimulation;
+    var endingVoronoiMapSimulation = _endingVoronoiMapSimulation;
     //end: imputs
 
     //begin: internals
-    var weightedVoronoi = d3WeightedVoronoi.weightedVoronoi().x(X_ACCESSOR).y(Y_ACCESSOR).weight(WEIGHT_ACCESSOR),
+    var weightedVoronoi = d3WeightedVoronoi.weightedVoronoi()
+        .x(INTERPOLATED_X_ACCESSOR)
+        .y(INTERPOLATED_Y_ACCESSOR)
+        .weight(INTERPOLATED_WEIGHT_ACCESSOR),
       shouldInitialize = true, // should initialize (or not) due to input changes via APIs
       clippingPolygon, // stores the clipping polygon; starting and ending Voronoï maps must use the same clipping polygon; set to the starting clipping polygon
       startingSiteByKey = {}, // map datum's identifier => startingSite (which references starting data, starting site's weight and position)
@@ -53,35 +57,30 @@
     ///////////////////////
     ///////// API /////////
     ///////////////////////
-    function _voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMapSimulation) {
-      startingVoronoiMapSimulation = _startingVoronoiMapSimulation;
-      endingVoronoiMapSimulation = _endingVoronoiMapSimulation;
-      shouldInitialize = true;
-
+    function _voronoiMapTween(interpolationValue) {
       // Produces a Voronoï tessellation inbetween a starting tessellation and an ending tessellation.
       // Currently uses a LERP interpollation. Param 'interpolationValue' gives the interpolation amount: 0->starting tessellation, 1->ending tessellation
-      return function voronoiTesselationInterpolator(interpolationValue) {
-        if (shouldInitialize) {
-          initialize();
-        }
 
-        // [STEP 1] interpolate each coords and weights
-        var interpolatedSites = siteTweenData.map(function (std) {
-          return {
-            key: std.key,
-            startingData: std.startingData,
-            endingData: std.endingData,
-            interpolatedX: lerp(std.startingX, std.endingX, interpolationValue),
-            interpolatedY: lerp(std.startingY, std.endingY, interpolationValue),
-            interpolatedWeight: lerp(std.startingWeight, std.endingWeight, interpolationValue),
-            interpolatedValue: lerp(std.startingValue, std.endingValue, interpolationValue),
-            tweenType: std.tweenType,
-          };
-        });
+      if (shouldInitialize) {
+        initialize();
+      }
 
-        // [STEP 2] use d3-weighted-voronoi to compute the interpolated tessellation
-        return weightedVoronoi(interpolatedSites);
-      };
+      // [STEP 1] interpolate each coords and weights
+      var interpolatedSites = siteTweenData.map(function (std) {
+        return {
+          key: std.key,
+          startingData: std.startingData,
+          endingData: std.endingData,
+          interpolatedX: lerp(std.startingX, std.endingX, interpolationValue),
+          interpolatedY: lerp(std.startingY, std.endingY, interpolationValue),
+          interpolatedWeight: lerp(std.startingWeight, std.endingWeight, interpolationValue),
+          interpolatedValue: lerp(std.startingValue, std.endingValue, interpolationValue),
+          tweenType: std.tweenType,
+        };
+      });
+
+      // [STEP 2] use d3-weighted-voronoi to compute the interpolated tessellation
+      return weightedVoronoi(interpolatedSites);
     }
 
     _voronoiMapTween.startingKey = function (_) {
@@ -124,13 +123,13 @@
 
       startingSiteByKey = {};
       startingSites.forEach(function (s) {
-        k = key(s.originalObject.data.originalData);
+        k = startingKey(s.originalObject.data.originalData);
         startingSiteByKey[k] = s;
         allSiteKeys.add(k);
       });
       endingSiteByKey = {};
       endingSites.forEach(function (s) {
-        k = key(s.originalObject.data.originalData);
+        k = endingKey(s.originalObject.data.originalData);
         endingSiteByKey[k] = s;
         allSiteKeys.add(k);
       });
@@ -178,7 +177,7 @@
           startingWeight = computeUnderweight(endingSite, startingPolygons);
           endingWeight = endingSite.weight;
           startingValue = 0;
-          endingValue = endingData.value;
+          endingValue = endingSite.originalObject.data.weight;
           tweenType = ENTER_TWEEN_TYPE;
         } else {
           //no endingSite, i.e. datum not in ending sites
@@ -191,7 +190,7 @@
           endingY = startingSite.y;
           startingWeight = startingSite.weight;
           endingWeight = computeUnderweight(startingSite, endingPolygons);
-          startingValue = startingData.value;
+          startingValue = startingSite.originalObject.data.weight;
           endingValue = 0;
           tweenType = EXIT_TWEEN_TYPE;
         }
@@ -229,7 +228,7 @@
       // [STEP 1] find the starting cell where the entering/exiting site/data comes in/out
       polygons.forEach(function (p) {
         if (!polygon) {
-          if (d3.polygonContains(p, [site.x, site.y])) {
+          if (d3Polygon.polygonContains(p, [site.x, site.y])) {
             polygon = p;
           }
         }

@@ -5,8 +5,8 @@ const tape = require('tape'),
 tape('voronoiMapTween(...) should set the expected defaults', function (test) {
   const startingData = [{ id: 0, weight: 1 }],
     endingData = [{ id: 0, weight: 1 }],
-    voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation(startingData).stop().tick(),
-    voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation(endingData).stop().tick();
+    voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation(startingData).stop(),
+    voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation(endingData).stop();
   const voronoiMapTween = d3VoronoiMapTween.voronoiMapTween(voronoiMapSimulation0, voronoiMapSimulation1);
 
   test.equal(voronoiMapTween.startingKey()(startingData[0]), 0);
@@ -16,8 +16,8 @@ tape('voronoiMapTween(...) should set the expected defaults', function (test) {
 
 tape('voronoiMapTween.startingKey should set specified identifier accessor', function (test) {
   const datum = { id: 0, idPrime: 1, weight: 1 },
-    voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([datum]).stop().tick(),
-    voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation([datum]).stop().tick(),
+    voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([datum]).stop(),
+    voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation([datum]).stop(),
     newAccessor = function (d) {
       return d.idPrime;
     };
@@ -31,8 +31,8 @@ tape('voronoiMapTween.startingKey should set specified identifier accessor', fun
 
 tape('voronoiMapTween.endingKey should set specified identifier accessor', function (test) {
   const datum = { id: 0, idPrime: 1, weight: 1 },
-    voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([datum]).stop().tick(),
-    voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation([datum]).stop().tick(),
+    voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([datum]).stop(),
+    voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation([datum]).stop(),
     newAccessor = function (d) {
       return d.idPrime;
     };
@@ -41,5 +41,51 @@ tape('voronoiMapTween.endingKey should set specified identifier accessor', funct
   test.equal(voronoiMapTween.endingKey(newAccessor), voronoiMapTween);
   test.equal(voronoiMapTween.startingKey()(datum), 0);
   test.equal(voronoiMapTween.endingKey()(datum), 1);
+  test.end();
+});
+
+tape('voronoiMapTween.endingKey should set specified identifier accessor', function (test) {
+  const datum = { id: 0, idPrime: 1, weight: 1 },
+    voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([datum]).stop(),
+    voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation([datum]).stop(),
+    newAccessor = function (d) {
+      return d.idPrime;
+    };
+  const voronoiMapTween = d3VoronoiMapTween.voronoiMapTween(voronoiMapSimulation0, voronoiMapSimulation1);
+
+  test.equal(voronoiMapTween.endingKey(newAccessor), voronoiMapTween);
+  test.equal(voronoiMapTween.startingKey()(datum), 0);
+  test.equal(voronoiMapTween.endingKey()(datum), 1);
+  test.end();
+});
+
+tape('voronoiMapTween(...) should idenditify added/deleted/updated data', function (test) {
+  const deletedData = { id: 0, weight: 1 },
+    updatedData = { id: 1, weight: 1 },
+    addedData = { id: 2, weight: 1 },
+    voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([deletedData, updatedData]).stop(),
+    voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation([updatedData, addedData]).stop();
+  const voronoiMapTween = d3VoronoiMapTween.voronoiMapTween(voronoiMapSimulation0, voronoiMapSimulation1);
+
+  const interpolatedVoronoiMapAt0 = voronoiMapTween(0);
+  const polygonOfDeletedDataAt0 = interpolatedVoronoiMapAt0.find(function (p) {
+    return p.site.originalObject.startingData === deletedData;
+  });
+  const polygonOfUpdatedDataAt0 = interpolatedVoronoiMapAt0.find(function (p) {
+    return p.site.originalObject.startingData === updatedData;
+  });
+  test.equal(polygonOfDeletedDataAt0.site.originalObject.tweenType, 'exit');
+  test.equal(polygonOfUpdatedDataAt0.site.originalObject.tweenType, 'update');
+
+  const interpolatedVoronoiMapAt1 = voronoiMapTween(1);
+  const polygonOfUpdatedDataAt1 = interpolatedVoronoiMapAt1.find(function (p) {
+    return p.site.originalObject.endingData === updatedData;
+  });
+  const polygonOfAddedDataAt1 = interpolatedVoronoiMapAt1.find(function (p) {
+    return p.site.originalObject.endingData === addedData;
+  });
+  test.equal(polygonOfUpdatedDataAt1.site.originalObject.tweenType, 'update');
+  test.equal(polygonOfAddedDataAt1.site.originalObject.tweenType, 'enter');
+
   test.end();
 });
