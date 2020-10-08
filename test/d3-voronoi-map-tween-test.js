@@ -2,6 +2,13 @@ const tape = require('tape'),
   d3VoronoiMap = require('d3-voronoi-map'),
   d3VoronoiMapTween = require('../build/d3-voronoi-map-tween');
 
+tape('voronoiMapTween should provide tween types', function (test) {
+  test.ok(voronoiMapTween.ENTER_TWEEN_TYPE);
+  test.ok(voronoiMapTween.UPDATE_TWEEN_TYPE);
+  test.ok(voronoiMapTween.EXIT_TWEEN_TYPE);
+  test.end();
+});
+
 tape('voronoiMapTween(...) should set the expected defaults', function (test) {
   const startingData = [{ id: 0, weight: 1 }],
     endingData = [{ id: 0, weight: 1 }],
@@ -74,8 +81,8 @@ tape('voronoiMapTween(...) should idenditify added/deleted/updated data', functi
   const polygonOfUpdatedDataAt0 = interpolatedVoronoiMapAt0.find(function (p) {
     return p.site.originalObject.startingData === updatedData;
   });
-  test.equal(polygonOfDeletedDataAt0.site.originalObject.tweenType, 'exit');
-  test.equal(polygonOfUpdatedDataAt0.site.originalObject.tweenType, 'update');
+  test.equal(polygonOfDeletedDataAt0.site.originalObject.tweenType, d3VoronoiMapTween.EXIT_TWEEN_TYPE);
+  test.equal(polygonOfUpdatedDataAt0.site.originalObject.tweenType, d3VoronoiMapTween.UPDATE_TWEEN_TYPE);
 
   const interpolatedVoronoiMapAt1 = voronoiMapTween(1);
   const polygonOfUpdatedDataAt1 = interpolatedVoronoiMapAt1.find(function (p) {
@@ -84,8 +91,8 @@ tape('voronoiMapTween(...) should idenditify added/deleted/updated data', functi
   const polygonOfAddedDataAt1 = interpolatedVoronoiMapAt1.find(function (p) {
     return p.site.originalObject.endingData === addedData;
   });
-  test.equal(polygonOfUpdatedDataAt1.site.originalObject.tweenType, 'update');
-  test.equal(polygonOfAddedDataAt1.site.originalObject.tweenType, 'enter');
+  test.equal(polygonOfUpdatedDataAt1.site.originalObject.tweenType, d3VoronoiMapTween.UPDATE_TWEEN_TYPE);
+  test.equal(polygonOfAddedDataAt1.site.originalObject.tweenType, d3VoronoiMapTween.ENTER_TWEEN_TYPE);
 
   test.end();
 });

@@ -259,6 +259,9 @@
   }
 
   exports.voronoiMapTween = voronoiMapTween;
+  exports.ENTER_TWEEN_TYPE = ENTER_TWEEN_TYPE;
+  exports.UPDATE_TWEEN_TYPE = UPDATE_TWEEN_TYPE;
+  exports.EXIT_TWEEN_TYPE = EXIT_TWEEN_TYPE;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
