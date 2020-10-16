@@ -12,16 +12,16 @@
     //begin: constants
     const DEFAULT_IDENTIFIER_ACCESSOR = function (d) {
       return d.id;
-    }; // d identified with its 'id' attribute
-    const INTERPOLATED_X_ACCESSOR = function (d) {
-      return d.interpolatedX;
-    }; // x-accessor of interpolated data
-    const INTERPOLATED_Y_ACCESSOR = function (d) {
-      return d.interpolatedY;
-    }; // y-accessor of interpolated data
-    const INTERPOLATED_WEIGHT_ACCESSOR = function (d) {
-      return d.interpolatedWeight;
-    }; // weight-accessor of interpolated data
+    }; // datum identified with its 'id' attribute
+    const INTERPOLATED_X_ACCESSOR = function (site) {
+      return site.interpolatedSiteX;
+    }; // x-accessor of interpolated site
+    const INTERPOLATED_Y_ACCESSOR = function (site) {
+      return site.interpolatedSiteY;
+    }; // y-accessor of interpolated site
+    const INTERPOLATED_WEIGHT_ACCESSOR = function (site) {
+      return site.interpolatedSiteWeight;
+    }; // weight-accessor of interpolated site
     //end: constants
 
     //begin: imputs
@@ -37,10 +37,10 @@
         .y(INTERPOLATED_Y_ACCESSOR)
         .weight(INTERPOLATED_WEIGHT_ACCESSOR),
       shouldInitialize = true, // should initialize (or not) due to input changes via APIs
-      clippingPolygon, // stores the clipping polygon; starting and ending Voronoï maps must use the same clipping polygon; set to the starting clipping polygon
-      startingSiteByKey = {}, // map datum's identifier => startingSite (which references starting data, starting site's weight and position)
-      endingSiteByKey = {}, // map datum's identifier => endingSite (which references ending data, ending site's weight and position)
-      allSiteKeys = new Set(), // all data identifiers from starting data and ending data
+      clippingPolygon, // stores the starting clipping polygon; starting and ending Voronoï maps must use the same clipping polygon
+      startingSiteByKey = {}, // map datum's identifier => startingSite (which references starting site's weight, position and starting data)
+      endingSiteByKey = {}, // map datum's identifier => endingSite (which references ending site's weight, position and ending data)
+      allSiteKeys = new Set(), // all data identifiers (from starting data and ending data)
       siteTweenData = []; // tween information for each data
     //end: internals
 
@@ -51,6 +51,10 @@
 
     function squaredDistance(s0, s1) {
       return sqr(s1[0] - s0[0]) + sqr(s1[1] - s0[1]);
+    }
+
+    function lerp(v0, v1, interpolationValue) {
+      return (1 - interpolationValue) * v0 + interpolationValue * v1;
     }
     //end: utils
 
@@ -71,10 +75,10 @@
           key: std.key,
           startingData: std.startingData,
           endingData: std.endingData,
-          interpolatedX: lerp(std.startingX, std.endingX, interpolationValue),
-          interpolatedY: lerp(std.startingY, std.endingY, interpolationValue),
-          interpolatedWeight: lerp(std.startingWeight, std.endingWeight, interpolationValue),
-          interpolatedValue: lerp(std.startingValue, std.endingValue, interpolationValue),
+          interpolatedSiteX: lerp(std.startingX, std.endingX, interpolationValue),
+          interpolatedSiteY: lerp(std.startingY, std.endingY, interpolationValue),
+          interpolatedSiteWeight: lerp(std.startingWeight, std.endingWeight, interpolationValue),
+          interpolatedDataWeight: lerp(std.startingDataWeight, std.endingDataWeight, interpolationValue),
           tweenType: std.tweenType,
         };
       });
@@ -139,13 +143,13 @@
         startingX,
         startingY,
         startingWeight,
-        startingValue,
+        startingDataWeight,
         endingSite,
         endingData,
         endingX,
         endingY,
         endingWeight,
-        endingValue,
+        endingDataWeight,
         tweenType;
       //find correspondance between starting and ending cells/sites/data; handle entering and exiting cells
       siteTweenData = [];
@@ -162,8 +166,8 @@
           endingY = endingSite.y;
           startingWeight = startingSite.weight;
           endingWeight = endingSite.weight;
-          startingValue = startingSite.originalObject.data.weight;
-          endingValue = endingSite.originalObject.data.weight;
+          startingDataWeight = startingSite.originalObject.data.weight;
+          endingDataWeight = endingSite.originalObject.data.weight;
           tweenType = UPDATE_TWEEN_TYPE;
         } else if (endingSite) {
           // no startingSite, i.e. datum not in starting sites
@@ -176,8 +180,8 @@
           endingY = endingSite.y;
           startingWeight = computeUnderweight(endingSite, startingPolygons);
           endingWeight = endingSite.weight;
-          startingValue = 0;
-          endingValue = endingSite.originalObject.data.weight;
+          startingDataWeight = 0;
+          endingDataWeight = endingSite.originalObject.data.weight;
           tweenType = ENTER_TWEEN_TYPE;
         } else {
           //no endingSite, i.e. datum not in ending sites
@@ -190,8 +194,8 @@
           endingY = startingSite.y;
           startingWeight = startingSite.weight;
           endingWeight = computeUnderweight(startingSite, endingPolygons);
-          startingValue = startingSite.originalObject.data.weight;
-          endingValue = 0;
+          startingDataWeight = startingSite.originalObject.data.weight;
+          endingDataWeight = 0;
           tweenType = EXIT_TWEEN_TYPE;
         }
 
@@ -205,8 +209,8 @@
           endingY: endingY,
           startingWeight: startingWeight,
           endingWeight: endingWeight,
-          startingValue: startingValue,
-          endingValue: endingValue,
+          startingDataWeight: startingDataWeight,
+          endingDataWeight: endingDataWeight,
           tweenType: tweenType,
         });
       });
@@ -248,11 +252,6 @@
 
       var underweight = -squaredFarestDistance + pSite.weight;
       return underweight;
-    }
-
-    // linear interpolation between a starting value and an ending value
-    function lerp(startingValue, endingValue, interpolationValue) {
-      return (1 - interpolationValue) * startingValue + interpolationValue * endingValue;
     }
 
     return _voronoiMapTween;
