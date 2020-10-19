@@ -25,7 +25,7 @@ This is where the d3-voronoi-map-tween comes in: added data are displayed as ent
 
 ## Installing
 
-<!--If you use NPM, `npm install d3-voronoi-map-tween`. Otherwise, load `https://rawcdn.githack.com/Kcnarf/d3-voronoi-map-tween/v0.0.1/build/d3-voronoi-treemap.js`--> Load `https://raw.githack.com/Kcnarf/d3-voronoi-treemap/master/build/d3-voronoi-treemap.js`(or its `d3-voronoi-map-tween.min.js` version) to make it available in AMD, CommonJS, or vanilla environments. In vanilla, you must load the [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi) and [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) plugins prior to this one, and a d3 global is exported:
+<!--If you use NPM, `npm install d3-voronoi-map-tween`. Otherwise, load `https://rawcdn.githack.com/Kcnarf/d3-voronoi-map-tween/v0.0.1/build/d3-voronoi-treemap.js`--> Load `https://raw.githack.com/Kcnarf/d3-voronoi-map-tween/master/build/d3-voronoi-map-tween.js`(or its `d3-voronoi-map-tween.min.js` version) to make it available in AMD, CommonJS, or vanilla environments. In vanilla, you must load the [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi) and [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) plugins prior to this one, and a d3 global is exported:
 
 ```html
 <script src="https://d3js.org/d3.v6.min.js"></script>
@@ -52,9 +52,9 @@ In your javascript, in order to define the tween:
 
 ```javascript
 var startingVoronoiMapSimulation = d3.voronoiMapSimulation(startingData);
-goToFinalState(startingVoronoiMapSimulation); // go to final most representative Voronoï map, using d3-voronoi-map's static* feature
+goToFinalState(startingVoronoiMapSimulation); // get the most representative Voronoï map, using d3-voronoi-map's static* computation
 var endingVoronoiMapSimulation = d3.voronoiMapSimulation(endingData);
-goToFinalState(endingVoronoiMapSimulation); // go to final most representative Voronoï map, using d3-voronoi-map's static* feature
+goToFinalState(endingVoronoiMapSimulation); // get the most representative Voronoï map, using d3-voronoi-map's static* computation
 
 function keyAccessor(d) {
   return d.identifier; // retrieve the key/identifer of a datum; used to map starting and ending data
@@ -75,7 +75,32 @@ var endingVoronoiMapCells = voronoiMapTween(1); // at 1, similar to endingVorono
 
 ## API
 
-- TODO
+<a name="voronoiMapTween" href="#voronoiMapTween">#</a> d3.<b>voronoiMapTween</b>()
+
+Creates a new voronoiMapTween with the default configuration values and functions ([_startingKey_](#voronoiMapTween_keys), [_endingKey_](#voronoiMapTween_keys)).
+
+<a name="_voronoiMapTween" href="#_voronoiMapTween">#</a> <i>voronoiMapTween</i>(<i>startingVoronoiMapSimluation</i>, <i>endingVoronoiMapSimluation</i>)
+
+Returns a function _ƒ<sub>int</sub>_ which is the interpolator between the <i>startingVoronoiMapSimluation</i> and <i>endingVoronoiMapSimluation</i>.
+
+Considering the data comming from either the starting data set or the ending data set, each single datum has a corresponding cell in the starting Voronoï map and another in the ending Voronoï map. The objective of the plugin is to provide a way (i.e. the interpolation function _ƒ<sub>int</sub>_) to smoothly interpolate between the starting cell and the ending cell of each data. To do so, we do not interpolate polygons of each single datum (in order to no have a mess of overlapping polygons), but rather interpolate the characteristics of the sites of each polygon and then compute a Voronoï map of these interpolated sites (thanks to [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi)).
+
+Calling _ƒ<sub>int</sub>(interpolationValue)_ returns a voronoi map, which is a sparse array of polygons, one for each data comming from either the starting data set or the ending data set. The _interpolation value_ must be a float value within [0, 1]:
+
+- _ƒ<sub>int</sub>(0)_ returns a Voronoï map _similar\*_ to `startingVoronoiMapSimluation.state().polygons`; _similar\*_ means same polygons, but not necessarily in the same order; there is no polygon for data exclusively in the <i>endingVoronoiMapSimluation</i>
+- _ƒ<sub>int</sub>(1)_ returns a Voronoï map _similar\*_ to `endingVoronoiMapSimluation.state().polygons`; there is no polygon for data exclusively in the <i>startingVoronoiMapSimluation</i>
+- otherwise, the returned Voronoï map is inbetween the starting and ending Voronoï maps
+
+<a name="voronoiMapTween_keys" href="#voronoiMapTween_keys">#</a> <i>voronoiMapTween</i>.<b>startingKey</b>([<i>key</i>]), <i>voronoiMapTween</i>.<b>endingKey</b>([<i>key</i>])
+In oredr to make the correpondance between the starting and ending polygon of a single datum, we assigns each starting and ending polygon/cell with their respective datum's key.
+
+If _key_ is specified, sets the _key_ accessor. Strating and ending keys may be distinct. If _key_ is not specified, returns the current _key_ accessor, which defaults to:
+
+```js
+function key(d) {
+  return d.id;
+}
+```
 
 ## Dependencies
 

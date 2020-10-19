@@ -66,7 +66,7 @@ export function voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMap
       initialize();
     }
 
-    // [STEP 1] interpolate each coords and weights
+    // [STEP 1] interpolate sites's coords and weights
     var interpolatedSites = siteTweenData.map(function (std) {
       return {
         key: std.key,
