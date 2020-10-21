@@ -7,6 +7,7 @@ This D3 plugin allows to interpolate from one [d3-voronoi-map](https://github.co
 Because a picture is worth a thousand words:
 
 ![simulation](./img/example0.gif)
+
 In this animation:
 
 - red cells are cells available only int the starting Voronoï map, i.e. data only in the starting data set;
@@ -121,7 +122,7 @@ By default, we consider the starting and ending Voronoï maps having the same cl
 - ƒ(1) returns the ending clipping polygon
 - otherwise returns an intermediate polygon inbetween the satrting and ending polygon
 
-As an example, if the starting and ending polygons are squares of different sizes, the clipping polygon may look like:
+As a simple first example, if the starting and ending clipping polygons are squares of different sizes, the clipping polygon may look like:
 
 ```js
 const startingSize = 50;
@@ -135,6 +136,16 @@ function ƒ(interpolationValue) {
     [intermediateSize, 0],
   ];
 }
+voronoiMapTween.clipInterpolator(ƒ);
+```
+
+As a second example, for more complexe use cases, you can provide an interpolator using [flubber](https://github.com/veltman/flubber):
+
+```js
+const startingClippingPolygon = ...;
+const endingClippingPolygon = ...;
+
+voronoiMapTween.clipInterpolator(flubber.interpolate(startingClippingPolygon, endingClippingPolygon););
 ```
 
 ## Dependencies
