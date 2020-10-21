@@ -19,14 +19,18 @@ export function voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMap
   const INTERPOLATED_WEIGHT_ACCESSOR = function (site) {
     return site.interpolatedSiteWeight;
   }; // weight-accessor of interpolated site
+  const DEFAULT_CLIP_INTERPOLATOR = function (interpolationValue) {
+    return startingVoronoiMapSimulation.clip();
+  }; // default interpolator of the clipping polygon; in fact, no interpolation at all, always used the starting clipping polygon
   //end: constants
 
-  //begin: imputs
+  //begin: inputs
+  var startingVoronoiMapSimulation = _startingVoronoiMapSimulation; // the starting d3-voronoi-map simulation
+  var endingVoronoiMapSimulation = _endingVoronoiMapSimulation; // the ending d3-voronoi-map simulation
+  var clipInterpolator = DEFAULT_CLIP_INTERPOLATOR; // used to know retrieve the interpolated clipping polygon;
   var startingKey = DEFAULT_IDENTIFIER_ACCESSOR; // used to identify starting data; used when maping starting data and ending data
   var endingKey = DEFAULT_IDENTIFIER_ACCESSOR; // used to identify ending data; used when maping starting data and ending data
-  var startingVoronoiMapSimulation = _startingVoronoiMapSimulation;
-  var endingVoronoiMapSimulation = _endingVoronoiMapSimulation;
-  //end: imputs
+  //end: inputs
 
   //begin: internals
   var weightedVoronoi = d3WeightedVoronoi()
@@ -34,7 +38,6 @@ export function voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMap
       .y(INTERPOLATED_Y_ACCESSOR)
       .weight(INTERPOLATED_WEIGHT_ACCESSOR),
     shouldInitialize = true, // should initialize (or not) due to input changes via APIs
-    clippingPolygon, // stores the starting clipping polygon; starting and ending Voronoï maps must use the same clipping polygon
     startingSiteByKey = {}, // map datum's identifier => startingSite (which references starting site's weight, position and starting data)
     endingSiteByKey = {}, // map datum's identifier => endingSite (which references ending site's weight, position and ending data)
     allSiteKeys = new Set(), // all data identifiers (from starting data and ending data)
@@ -58,50 +61,64 @@ export function voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMap
   ///////////////////////
   ///////// API /////////
   ///////////////////////
-  function _voronoiMapTween(interpolationValue) {
-    // Produces a Voronoï tessellation inbetween a starting tessellation and an ending tessellation.
-    // Currently uses a LERP interpollation. Param 'interpolationValue' gives the interpolation amount: 0->starting tessellation, 1->ending tessellation
+  const _voronoiMapTween = {
+    mapInterpolator: function () {
+      return function (interpolationValue) {
+        // Produces a Voronoï tessellation inbetween a starting tessellation and an ending tessellation.
+        // Currently uses a LERP interpollation. Param 'interpolationValue' gives the interpolation amount: 0->starting tessellation, 1->ending tessellation
 
-    if (shouldInitialize) {
-      initialize();
-    }
+        if (shouldInitialize) {
+          initialize();
+        }
 
-    // [STEP 1] interpolate sites's coords and weights
-    var interpolatedSites = siteTweenData.map(function (std) {
-      return {
-        key: std.key,
-        startingData: std.startingData,
-        endingData: std.endingData,
-        interpolatedSiteX: lerp(std.startingX, std.endingX, interpolationValue),
-        interpolatedSiteY: lerp(std.startingY, std.endingY, interpolationValue),
-        interpolatedSiteWeight: lerp(std.startingWeight, std.endingWeight, interpolationValue),
-        interpolatedDataWeight: lerp(std.startingDataWeight, std.endingDataWeight, interpolationValue),
-        tweenType: std.tweenType,
+        // [STEP 1] interpolate sites's coords and weights
+        var interpolatedSites = siteTweenData.map(function (std) {
+          return {
+            key: std.key,
+            startingData: std.startingData,
+            endingData: std.endingData,
+            interpolatedSiteX: lerp(std.startingX, std.endingX, interpolationValue),
+            interpolatedSiteY: lerp(std.startingY, std.endingY, interpolationValue),
+            interpolatedSiteWeight: lerp(std.startingWeight, std.endingWeight, interpolationValue),
+            interpolatedDataWeight: lerp(std.startingDataWeight, std.endingDataWeight, interpolationValue),
+            tweenType: std.tweenType,
+          };
+        });
+
+        // [STEP 2] use d3-weighted-voronoi to compute the interpolated tessellation
+        return weightedVoronoi.clip(clipInterpolator(interpolationValue))(interpolatedSites);
       };
-    });
+    },
 
-    // [STEP 2] use d3-weighted-voronoi to compute the interpolated tessellation
-    return weightedVoronoi(interpolatedSites);
-  }
+    clipInterpolator: function (_) {
+      if (!arguments.length) {
+        return clipInterpolator;
+      }
 
-  _voronoiMapTween.startingKey = function (_) {
-    if (!arguments.length) {
-      return startingKey;
-    }
+      clipInterpolator = _;
+      shouldInitialize = true;
+      return _voronoiMapTween;
+    },
 
-    startingKey = _;
-    shouldInitialize = true;
-    return _voronoiMapTween;
-  };
+    startingKey: function (_) {
+      if (!arguments.length) {
+        return startingKey;
+      }
 
-  _voronoiMapTween.endingKey = function (_) {
-    if (!arguments.length) {
-      return endingKey;
-    }
+      startingKey = _;
+      shouldInitialize = true;
+      return _voronoiMapTween;
+    },
 
-    endingKey = _;
-    shouldInitialize = true;
-    return _voronoiMapTween;
+    endingKey: function (_) {
+      if (!arguments.length) {
+        return endingKey;
+      }
+
+      endingKey = _;
+      shouldInitialize = true;
+      return _voronoiMapTween;
+    },
   };
 
   ///////////////////////
@@ -109,9 +126,6 @@ export function voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMap
   ///////////////////////
 
   function initialize() {
-    clippingPolygon = startingVoronoiMapSimulation.clip();
-    weightedVoronoi.clip(clippingPolygon);
-
     var startingPolygons = startingVoronoiMapSimulation.state().polygons,
       endingPolygons = endingVoronoiMapSimulation.state().polygons,
       startingSites = startingPolygons.map(function (p) {

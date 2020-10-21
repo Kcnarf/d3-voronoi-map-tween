@@ -7,6 +7,12 @@ This D3 plugin allows to interpolate from one [d3-voronoi-map](https://github.co
 Because a picture is worth a thousand words:
 
 ![simulation](./img/example0.gif)
+In this animation:
+
+- red cells are cells available only int the starting Voronoï map, i.e. data only in the starting data set;
+- green cells are cells available only in the ending Voronoï map, i.e. data only in the ending data set;
+- blue cells are cells available in both the starting and ending Voronoï map, i.e. data both in the starting and ending sets with potentially distinct weights
+- the second half part of the animation shows how the cells' sites evolve (they either appear/disappear/evolve in location and weight)
 
 Available only for **d3-voronoi-map v2**.
 
@@ -34,7 +40,7 @@ This is where the d3-voronoi-map-tween comes in: added data are displayed as ent
 <!--script src="https://rawcdn.githack.com/Kcnarf/d3-voronoi-treemap/v0.0.1/build/d3-voronoi-map-tween.js"></script-->
 <script src="https://rawcdn.githack.com/Kcnarf/d3-voronoi-treemap/master/build/d3-voronoi-map-tween.js"></script>
 <script>
-  var voronoiMapTween = d3.voronoiMapTween(...);
+  var voronoiMapTween = d3.voronoiMapTween();
 </script>
 ```
 
@@ -56,13 +62,11 @@ goToFinalState(startingVoronoiMapSimulation); // get the most representative Vor
 var endingVoronoiMapSimulation = d3.voronoiMapSimulation(endingData);
 goToFinalState(endingVoronoiMapSimulation); // get the most representative Voronoï map, using d3-voronoi-map's static* computation
 
-function keyAccessor(d) {
-  return d.identifier; // retrieve the key/identifer of a datum; used to map starting and ending data
-}
 var voronoiMapTween = d3
-  .voronoiMapTween(startingVoronoiMapSimulation, endingVoronoiMapSimulation)
-  .startingKey(keyAccessor) // set the key-accessor used on starting data
-  .endingKey(keyAccessor); // set the key-accessor used on ending data
+  .voronoiMapTween()
+  .startingSimulation(startingVoronoiMapSimulation)
+  .endingSimulation(endingVoronoiMapSimulation);
+var voronoiMapInterpolator = voronoiMapTween.mapInterpolator(); // interpolator of the Voronoi maps
 ```
 
 Then, later in your javascript, in order to compute the interpolated Voronoï map cells, set the desired interpolation value (in [0, 1]):
@@ -75,13 +79,13 @@ var endingVoronoiMapCells = voronoiMapTween(1); // at 1, similar to endingVorono
 
 ## API
 
-<a name="voronoiMapTween" href="#voronoiMapTween">#</a> d3.<b>voronoiMapTween</b>()
+<a name="voronoiMapTween" href="#voronoiMapTween">#</a> d3.<b>voronoiMapTween</b>(<i>startingVoronoiMapSimluation</i>, <i>endingVoronoiMapSimluation</i>)
 
-Creates a new voronoiMapTween with the default configuration values and functions ([_startingKey_](#voronoiMapTween_keys), [_endingKey_](#voronoiMapTween_keys)).
+Creates a new voronoiMapTween with the two [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) simulations, and with the default configuration values and functions ([_startingKey_](#voronoiMapTween_keys), [_endingKey_](#voronoiMapTween_keys)).
 
-<a name="_voronoiMapTween" href="#_voronoiMapTween">#</a> <i>voronoiMapTween</i>(<i>startingVoronoiMapSimluation</i>, <i>endingVoronoiMapSimluation</i>)
+<a name="voronoiMapTween_mapInterpolator" href="#voronoiMapTween_mapInterpolator">#</a> <i>voronoiMapTween.mapInterpolator</i>()
 
-Returns a function _ƒ<sub>int</sub>_ which is the interpolator between the <i>startingVoronoiMapSimluation</i> and <i>endingVoronoiMapSimluation</i>.
+Returns a function _ƒ<sub>int</sub>_ which is the interpolator between the starting Voronoï map and the ending Voronoï map.
 
 Considering the data comming from either the starting data set or the ending data set, each single datum has a corresponding cell in the starting Voronoï map and another in the ending Voronoï map. The objective of the plugin is to provide a way (i.e. the interpolation function _ƒ<sub>int</sub>_) to smoothly interpolate between the starting cell and the ending cell of each data. To do so, we do not interpolate polygons of each single datum (in order to no have a mess of overlapping polygons), but rather interpolate the characteristics of the sites of each polygon and then compute a Voronoï map of these interpolated sites (thanks to [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi)).
 
@@ -94,11 +98,42 @@ Calling _ƒ<sub>int</sub>(interpolationValue)_ returns a voronoi map, which is a
 <a name="voronoiMapTween_keys" href="#voronoiMapTween_keys">#</a> <i>voronoiMapTween</i>.<b>startingKey</b>([<i>key</i>]), <i>voronoiMapTween</i>.<b>endingKey</b>([<i>key</i>])
 In oredr to make the correpondance between the starting and ending polygon of a single datum, we assigns each starting and ending polygon/cell with their respective datum's key.
 
-If _key_ is specified, sets the _key_ accessor. Strating and ending keys may be distinct. If _key_ is not specified, returns the current _key_ accessor, which defaults to:
+If _key_ is specified, sets the _key_ accessor. Starting and ending keys may be distinct. If _key_ is not specified, returns the current _key_ accessor, which defaults to:
 
 ```js
 function key(d) {
   return d.id;
+}
+```
+
+<a name="voronoiMapTween_clipInterpolator" href="#voronoiMapTween_clipInterpolator">#</a> <i>voronoiMapTween</i>.<b>clipInterpolator</b>([<i>ƒ</i>])
+If _ƒ_ is specified, sets the clipping polygon interpolator. If _ƒ_ is not specified, returns the current interpolator, which defaults to:
+
+```js
+function ƒ(interpolationValue) {
+  return startingVoronoiMapSimulation.clip();
+}
+```
+
+By default, we consider the starting and ending Voronoï maps having the same clipping polygon. If this is not the case, this API should be used to provide the clipping polygon interpolator, which must be a function ƒ with a float parameter in [0, 1] where:
+
+- ƒ(0) returns the starting clipping polygon
+- ƒ(1) returns the ending clipping polygon
+- otherwise returns an intermediate polygon inbetween the satrting and ending polygon
+
+As an example, if the starting and ending polygons are squares of different sizes, the clipping polygon may look like:
+
+```js
+const startingSize = 50;
+const endingSize = 100;
+function ƒ(interpolationValue) {
+  const intermediateSize = (1 - interpolationValue) * startingSize + interpolationValue * endingSize; // lerp interpolation
+  return [
+    [0, 0],
+    [0, intermediateSize],
+    [intermediateSize, intermediateSize],
+    [intermediateSize, 0],
+  ];
 }
 ```
 
