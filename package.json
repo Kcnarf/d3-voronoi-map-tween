@@ -37,7 +37,7 @@
     "d3-voronoi-map": "2.*"
   },
   "dependencies": {
-    "d3-polygon": "1.*",
-    "d3-weighted-voronoi": "1.*"
+    "d3-weighted-voronoi": "1.*",
+    "flubber": "~>0.3.0"
   }
 }

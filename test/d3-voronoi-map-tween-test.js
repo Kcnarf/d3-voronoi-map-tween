@@ -60,7 +60,10 @@ tape('voronoiMapTween.mapInterpolator()', function (test) {
       updatedData = { id: 1, weight: 1 },
       addedData = { id: 2, weight: 1 },
       voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([deletedData, updatedData]).stop(),
-      voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation([updatedData, addedData]).stop();
+      voronoiMapSimulation1 = d3VoronoiMap
+        .voronoiMapSimulation([updatedData, addedData])
+        .clip(voronoiMapSimulation0.clip()) // exact same clipping polygon, deactivate/bypass Flubber
+        .stop();
     const voronoiMapInterpolator = d3VoronoiMapTween
       .voronoiMapTween(voronoiMapSimulation0, voronoiMapSimulation1)
       .mapInterpolator();
@@ -102,7 +105,9 @@ tape('voronoiMapTween.mapInterpolator()', function (test) {
         return d.idPrime;
       },
       voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([dataOnlyAtStart, data1AtStart, data2AtStart]).stop(),
-      voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation([data1AtEnd, data2AtEnd, dataOnlyAtEnd]).stop();
+      voronoiMapSimulation1 = d3VoronoiMap
+        .voronoiMapSimulation([data1AtEnd, data2AtEnd, dataOnlyAtEnd])
+        .clip(voronoiMapSimulation0.clip()); // exact same clipping polygon, deactivate/bypass Flubber.stop();
     const voronoiMapInterpolator = d3VoronoiMapTween
       .voronoiMapTween(voronoiMapSimulation0, voronoiMapSimulation1)
       .startingKey(startingKey)

@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-weighted-voronoi'), require('d3-polygon')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'd3-weighted-voronoi', 'd3-polygon'], factory) :
-  (factory((global.d3 = global.d3 || {}),global.d3,global.d3));
-}(this, function (exports,d3WeightedVoronoi,d3Polygon) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-weighted-voronoi'), require('flubber')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'd3-weighted-voronoi', 'flubber'], factory) :
+  (factory((global.d3 = global.d3 || {}),global.d3,global.flubber));
+}(this, function (exports,d3WeightedVoronoi,flubber) { 'use strict';
 
   const ENTER_TWEEN_TYPE = 'enter'; // datum not in starting data, but in ending data; adds a cell to the starting Voronoï tessellation
   const UPDATE_TWEEN_TYPE = 'update'; // datum in starting data and in ending data; the corresponding cell in starting Voronoï tessellation evolves
@@ -25,6 +25,7 @@
     const DEFAULT_CLIP_INTERPOLATOR = function (interpolationValue) {
       return startingVoronoiMapSimulation.clip();
     }; // default interpolator of the clipping polygon; in fact, no interpolation at all, always used the starting clipping polygon
+    const AUTOMATIC_FLUBBER_INTERPOLATOR = false; // no automatic Flubber interpolation because produces poilygons with NaN coordinates; resolve issue before using it
     //end: constants
 
     //begin: inputs
@@ -75,7 +76,7 @@
           }
 
           // [STEP 1] interpolate sites's coords and weights
-          var interpolatedSites = siteTweenData.map(function (std) {
+          const interpolatedSites = siteTweenData.map(function (std) {
             return {
               key: std.key,
               startingData: std.startingData,
@@ -129,7 +130,18 @@
     ///////////////////////
 
     function initialize() {
-      var startingPolygons = startingVoronoiMapSimulation.state().polygons,
+      if (AUTOMATIC_FLUBBER_INTERPOLATOR) {
+        const startingClippingPolygon = startingVoronoiMapSimulation.clip(),
+          endingClippingPolygon = endingVoronoiMapSimulation.clip();
+        if (startingClippingPolygon !== endingClippingPolygon && clipInterpolator === DEFAULT_CLIP_INTERPOLATOR) {
+          clipInterpolator = flubber.interpolate(startingClippingPolygon, endingClippingPolygon, {
+            string: false,
+            maxSegmentLength: 50,
+          });
+        }
+      }
+
+      const startingPolygons = startingVoronoiMapSimulation.state().polygons,
         endingPolygons = endingVoronoiMapSimulation.state().polygons,
         startingSites = startingPolygons.map(function (p) {
           return p.site;
@@ -238,33 +250,36 @@
 
     // returns an underweighted weight so that the entering (or exiting) site/data is completly overweighted by the starting sites (or ending sites)
     // algo:
-    //	[STEP 1] find the starting cell where the entering/exiting site/data comes in/out
+    //	[STEP 1] find the closest starting site to the entering/exiting site/data;
+    //    if starting/ending clipping polygons are the same, the entering/exiting site WILL surely appear/disappear into/from the closest site's polygon
+    //    on the other case, the entering/exiting site MAY appear in/disappear from the closest site's polygon, or appear/disappear out of the closest site's polygon if the entering/exiting site is out of the starting/ending clipping polygon
     //	[STEP 2] compute the underweighted weight (depending on farest vertex from polygon's site and polygon's site's weight)
     function computeUnderweight(site, polygons) {
-      var polygon = null;
+      var closestSiteSquaredDistance = Infinity,
+        polygon = null,
+        squaredD;
 
-      // [STEP 1] find the starting cell where the entering/exiting site/data comes in/out
+      // [STEP 1] find the closest starting/ending site to the entering/exiting site/data;
       polygons.forEach(function (p) {
-        if (!polygon) {
-          if (d3Polygon.polygonContains(p, [site.x, site.y])) {
-            polygon = p;
-          }
+        squaredD = squaredDistance([p.site.x, p.site.y], [site.x, site.y]);
+        if (squaredD < closestSiteSquaredDistance) {
+          closestSiteSquaredDistance = squaredD;
+          polygon = p;
         }
       });
 
-      // [STEP 2] compute the overweighted weight (depending on farest vertex from polygon's site and polygon's site's weight)
-      var pSite = polygon.site,
-        squaredFarestDistance = -Infinity;
-      var squaredD;
+      // [STEP 2] compute the overweighted weight (depending on farest vertex of polygon and polygon's site's weight)
+      const pSite = polygon.site;
+      var farestVertexSquaredDistance = -Infinity;
       polygon.forEach(function (vertex) {
         // squaredD = (pSite.x - vertex[0])**2 + (pSite.y - vertex[1]) ** 2;
         squaredD = squaredDistance([pSite.x, pSite.y], vertex);
-        if (squaredD > squaredFarestDistance) {
-          squaredFarestDistance = squaredD;
+        if (squaredD > farestVertexSquaredDistance) {
+          farestVertexSquaredDistance = squaredD;
         }
       });
 
-      var underweight = -squaredFarestDistance + pSite.weight;
+      const underweight = -farestVertexSquaredDistance + pSite.weight;
       return underweight;
     }
 
