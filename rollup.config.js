@@ -1,6 +1,5 @@
 var globals = {
   'd3-weighted-voronoi': 'd3',
-  flubber: 'flubber',
 };
 
 export default {

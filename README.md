@@ -146,7 +146,7 @@ function ƒ(interpolationValue) {
 voronoiMapTween.clipInterpolator(ƒ);
 ```
 
-Note: if the starting and ending clipping polygons are of the same kind (e.g. a square, a disc) but with distinct size (as in the above example), you can try to <em>scale</em> the svg/paths of a static clipping polygon instead of providing a <em>clipInterpolator</em> function.
+Note: if the starting and ending clipping polygons are of the same kind (e.g. a square, a disc) but with distinct sizes (as in the above example), you can try to use a static clipping polygon, and then <em>scale</em> the svg/paths.
 
 As a second example, for more complexe use cases, you can provide an interpolator using [flubber](https://github.com/veltman/flubber):
 

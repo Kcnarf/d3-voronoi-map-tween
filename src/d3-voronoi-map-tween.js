@@ -1,5 +1,4 @@
 import { weightedVoronoi as d3WeightedVoronoi } from 'd3-weighted-voronoi';
-import { interpolate as flubberInterpolate } from 'flubber';
 
 export const ENTER_TWEEN_TYPE = 'enter'; // datum not in starting data, but in ending data; adds a cell to the starting Voronoï tessellation
 export const UPDATE_TWEEN_TYPE = 'update'; // datum in starting data and in ending data; the corresponding cell in starting Voronoï tessellation evolves
@@ -22,7 +21,6 @@ export function voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMap
   const DEFAULT_CLIP_INTERPOLATOR = function (interpolationValue) {
     return startingVoronoiMapSimulation.clip();
   }; // default interpolator of the clipping polygon; in fact, no interpolation at all, always used the starting clipping polygon
-  const AUTOMATIC_FLUBBER_INTERPOLATOR = false; // no automatic Flubber interpolation because produces poilygons with NaN coordinates; resolve issue before using it
   //end: constants
 
   //begin: inputs
@@ -127,17 +125,6 @@ export function voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMap
   ///////////////////////
 
   function initialize() {
-    if (AUTOMATIC_FLUBBER_INTERPOLATOR) {
-      const startingClippingPolygon = startingVoronoiMapSimulation.clip(),
-        endingClippingPolygon = endingVoronoiMapSimulation.clip();
-      if (startingClippingPolygon !== endingClippingPolygon && clipInterpolator === DEFAULT_CLIP_INTERPOLATOR) {
-        clipInterpolator = flubberInterpolate(startingClippingPolygon, endingClippingPolygon, {
-          string: false,
-          maxSegmentLength: 50,
-        });
-      }
-    }
-
     const startingPolygons = startingVoronoiMapSimulation.state().polygons,
       endingPolygons = endingVoronoiMapSimulation.state().polygons,
       startingSites = startingPolygons.map(function (p) {
