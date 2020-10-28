@@ -2,9 +2,9 @@
 
 # d3-voronoi-map-tween
 
-This D3 plugin allows to interpolate from one [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) to another.
+This D3 plugin allows to animate back and forth between two [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map).
 
-Considering the data comming from either the starting data set or the ending data set, each single datum has a corresponding cell in the starting Voronoï map and another in the ending Voronoï map. The objective of the plugin is to provide a way (i.e. an interpolator function) to smoothly interpolate between the starting cell and the ending cell of each data. To do so, we do not interpolate polygons associated to each single datum in order to no have a mess of overlapping polygons. But we rather interpolate the characteristics of the sites of each polygon and then compute a Voronoï map of these interpolated sites (thanks to [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi)). We also have to take care of data only available in the starting or ending data sets.
+Considering the data coming from either the starting data set or the ending data set, each single datum has a corresponding cell in the starting Voronoï map and another in the ending Voronoï map. The objective of the plugin is to provide a way (i.e. an interpolator function) to smoothly interpolate between the starting cell and the ending cell of each data. To do so, we do not interpolate polygons associated to each single datum in order to no have a mess of overlapping cells. But we rather interpolate the characteristics of the sites producing each polygon and then compute a Voronoï map of these interpolated sites (thanks to [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi)). We also have to take care of cells found only in the starting Voronoï map (data only available in the startingd ata set) or found only in the ending Voronoï map (data only in the ending data set).
 
 Because a picture is worth a thousand words:
 
@@ -12,7 +12,7 @@ Because a picture is worth a thousand words:
 
 In this animation:
 
-- blue cells are cells available in both the starting and ending Voronoï map, i.e. data both in the starting and ending sets; these cells smoothly evolve in order to reflect their starting and ending weights, which may be distinct
+- blue cells are cells available in both the starting and ending Voronoï maps, i.e. data both in the starting and ending sets; these cells smoothly evolve in order to reflect their starting and ending weights, which may be distinct
 - red cells are cells available only in the starting Voronoï map, i.e. data only in the starting data set; these cells smoothly disappear
 - green cells are cells available only in the ending Voronoï map, i.e. data only in the ending data set; these cells smoothly appear
 - the second half part of the animation shows how the cells' sites evolve (they either appear/disappear/evolve in location and weight)
@@ -34,7 +34,7 @@ This is where the d3-voronoi-map-tween comes in:
 - Real life use cases
   - [Democratic Primaries: Preferential Poll Results](https://swayable.com/insights/primaries2019) by Nadieh Bremer in Swayable (more details at https://www.visualcinnamon.com/portfolio/swayable-preferential-polling); in reality, this real life use case does not use the plugin, but it was the premice of this plugin
 - Examples with available code
-  - [Voronoï playground: animating addition/removing of data](https://blockbuilder.org/Kcnarf/b2212ceafc875aac0e02a153fe9ff330)
+  - [d3-voronoi-map-tween usage](https://bl.ocks.org/Kcnarf/bbd5f4811af948badb161accbaace61e)
 
 ## Installing
 
@@ -89,7 +89,7 @@ Creates a new voronoiMapTween based on the two [d3-voronoi-map](https://github.c
 
 <a name="voronoiMapTween_mapInterpolator" href="#voronoiMapTween_mapInterpolator">#</a> <i>voronoiMapTween</i>.<b>mapInterpolator</b>()
 
-Returns a function which is the interpolator between the starting Voronoï map and the ending Voronoï map. Calling _mapInterpolator(interpolationValue)_ returns a Voronoï map, which is a sparse array of polygons, one for each data comming from either the starting data set or the ending data set. The _interpolation value_ must be a float value within `[0, 1]`:
+Returns a function which is the interpolator between the starting Voronoï map and the ending Voronoï map. Calling _mapInterpolator(interpolationValue)_ returns a Voronoï map, which is a sparse array of polygons, one for each data coming from either the starting data set or the ending data set. The _interpolation value_ must be a float value within `[0, 1]`:
 
 - `mapInterpolator(0)` returns a Voronoï map \_similar\*_ to `startingVoronoiMapSimluation.state().polygons`; \_similar\*_ means same polygons, but not necessarily in the same order; there is no polygon for data exclusively in the <i>endingVoronoiMapSimluation</i>
 - `mapInterpolator(1)` returns a Voronoï map \_similar\*\_ to `endingVoronoiMapSimluation.state().polygons`; there is no polygon for data exclusively in the <i>startingVoronoiMapSimluation</i>
