@@ -19,13 +19,14 @@ export function voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMap
     return site.interpolatedSiteWeight;
   }; // weight-accessor of interpolated site
   const DEFAULT_CLIP_INTERPOLATOR = function (interpolationValue) {
-    return startingVoronoiMapSimulation.clip();
+    return startingClippingPolygon;
   }; // default interpolator of the clipping polygon; in fact, no interpolation at all, always used the starting clipping polygon
   //end: constants
 
   //begin: inputs
-  var startingVoronoiMapSimulation = _startingVoronoiMapSimulation; // the starting d3-voronoi-map simulation
-  var endingVoronoiMapSimulation = _endingVoronoiMapSimulation; // the ending d3-voronoi-map simulation
+  var startingPolygons = _startingVoronoiMapSimulation.state().polygons; // starting Voronoï tesselletaion
+  var endingPolygons = _endingVoronoiMapSimulation.state().polygons; // ending Voronoï tesselletaion
+  var startingClippingPolygon = _startingVoronoiMapSimulation.clip(); // used by the DEFAULT_CLIP_INTERPOLATOR
   var clipInterpolator = DEFAULT_CLIP_INTERPOLATOR; // used to know retrieve the interpolated clipping polygon;
   var startingKey = DEFAULT_IDENTIFIER_ACCESSOR; // used to identify starting data; used when maping starting data and ending data
   var endingKey = DEFAULT_IDENTIFIER_ACCESSOR; // used to identify ending data; used when maping starting data and ending data
@@ -125,9 +126,7 @@ export function voronoiMapTween(_startingVoronoiMapSimulation, _endingVoronoiMap
   ///////////////////////
 
   function initialize() {
-    const startingPolygons = startingVoronoiMapSimulation.state().polygons,
-      endingPolygons = endingVoronoiMapSimulation.state().polygons,
-      startingSites = startingPolygons.map(function (p) {
+    const startingSites = startingPolygons.map(function (p) {
         return p.site;
       }),
       endingSites = endingPolygons.map(function (p) {
