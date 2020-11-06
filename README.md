@@ -8,7 +8,7 @@ Considering the data coming from either the starting data set or the ending data
 
 Because a picture is worth a thousand words:
 
-![simulation](./img/example0.gif)
+![animation](./img/example0.gif)
 
 In this animation:
 
@@ -42,8 +42,8 @@ This is where the d3-voronoi-map-tween comes in:
 
 ```html
 <script src="https://d3js.org/d3.v6.min.js"></script>
-<script src="https://rawcdn.githack.com/Kcnarf/d3-weighted-voronoi/v1.0.1/build/d3-weighted-voronoi.js"></script>
-<script src="https://rawcdn.githack.com/Kcnarf/d3-voronoi-map/v2.0.1/build/d3-voronoi-map.js"></script>
+<script src="https://rawcdn.githack.com/Kcnarf/d3-weighted-voronoi/v1.1.0/build/d3-weighted-voronoi.js"></script>
+<script src="https://rawcdn.githack.com/Kcnarf/d3-voronoi-map/v2.1.0/build/d3-voronoi-map.js"></script>
 <!--NO-VERSION-YET script src="https://rawcdn.githack.com/Kcnarf/d3-voronoi-treemap/v0.0.1/build/d3-voronoi-map-tween.js"></script-->
 <script src="https://rawcdn.githack.com/Kcnarf/d3-voronoi-treemap/master/build/d3-voronoi-map-tween.js"></script>
 <script>
@@ -162,7 +162,6 @@ voronoiMapTween.clipInterpolator(flubber.interpolate(startingClippingPolygon, en
 ## Dependencies
 
 - d3-voronoi-map.voronoiMapSimulation
-- d3-polygon.flubber
 
 ## Semantic Versioning
 

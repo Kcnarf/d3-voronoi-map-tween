@@ -1,7 +1,7 @@
 {
   "name": "d3-voronoi-map-tween",
   "version": "0.0.1",
-  "description": "D3 plugin allowing interpolation from one d3-voronoi-map to another",
+  "description": "D3 plugin allowing to animate back and forth between two d3-voronoi-map.",
   "keywords": [
     "d3",
     "d3-module",
@@ -31,10 +31,10 @@
     "prepublish": "zip -j build/d3-voronoi-map-tween.zip -- LICENSE README.md build/d3-voronoi-map-tween.js build/d3-voronoi-map-tween.min.js"
   },
   "devDependencies": {
+    "d3-voronoi-map": "2.*",
     "rollup": "0.27",
     "tape": "4",
-    "uglify-js": "~>2.6.0",
-    "d3-voronoi-map": "2.*"
+    "uglify-js": "~>2.6.0"
   },
   "dependencies": {
     "d3-weighted-voronoi": "1.*"
