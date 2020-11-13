@@ -4,7 +4,7 @@
 
 This D3 plugin allows to animate back and forth between two [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map).
 
-Considering the data coming from either the starting data set or the ending data set, each single datum has a corresponding cell in the starting Voronoï map and another in the ending Voronoï map. The objective of the plugin is to provide a way (i.e. an interpolator function) to smoothly interpolate between the starting cell and the ending cell of each data. To do so, we do not interpolate polygons associated to each single datum in order to no have a mess of overlapping cells. But we rather interpolate the characteristics of the sites producing each polygon and then compute a Voronoï map of these interpolated sites (thanks to [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi)). We also have to take care of cells found only in the starting Voronoï map (data only available in the startingd ata set) or found only in the ending Voronoï map (data only in the ending data set).
+Considering the data coming from either the starting data set or the ending data set, each single datum has a corresponding cell in the starting Voronoï map and another in the ending Voronoï map. The objective of the plugin is to provide a way (i.e. an interpolator function) to smoothly interpolate between the starting cell and the ending cell of each data. To do so, we do not interpolate polygons associated to each single datum in order to no have a mess of overlapping cells. But we rather interpolate the characteristics of the sites producing each polygon and then compute a Voronoï map of these interpolated sites (thanks to [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi)). We also have to take care of cells found only in the starting Voronoï map (data only available in the startingd data set) or found only in the ending Voronoï map (data only in the ending data set).
 
 Because a picture is worth a thousand words:
 
@@ -38,7 +38,7 @@ This is where the d3-voronoi-map-tween comes in:
 
 ## Installing
 
-<!--If you use NPM, `npm install d3-voronoi-map-tween`. Otherwise, load `https://rawcdn.githack.com/Kcnarf/d3-voronoi-map-tween/v0.0.1/build/d3-voronoi-treemap.js`--> Load `https://raw.githack.com/Kcnarf/d3-voronoi-map-tween/master/build/d3-voronoi-map-tween.js`(or its `d3-voronoi-map-tween.min.js` version) to make it available in AMD, CommonJS, or vanilla environments. In vanilla, you must load the [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi) and [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) plugins prior to this one, and a d3 global is exported:
+<!--If you use NPM, `npm install d3-voronoi-map-tween`. Otherwise, load `https://rawcdn.githack.com/Kcnarf/d3-voronoi-map-tween/v0.0.1/build/d3-voronoi-treemap.js` --> Load `https://raw.githack.com/Kcnarf/d3-voronoi-map-tween/master/build/d3-voronoi-map-tween.js`(or its `d3-voronoi-map-tween.min.js` version) to make it available in AMD, CommonJS, or vanilla environments. In vanilla, you must load the [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi) and [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) plugins prior to this one, and a d3 global is exported:
 
 ```html
 <script src="https://d3js.org/d3.v6.min.js"></script>
@@ -65,9 +65,9 @@ In your javascript, in order to define the tween:
 
 ```javascript
 var startingVoronoiMapSimulation = d3.voronoiMapSimulation(startingData);
-goToFinalState(startingVoronoiMapSimulation); // get the most representative Voronoï map, using d3-voronoi-map's static* computation feature
+goToFinalState(startingVoronoiMapSimulation); // get the most representative Voronoï map, using d3-voronoi-map's *static* computation feature
 var endingVoronoiMapSimulation = d3.voronoiMapSimulation(endingData);
-goToFinalState(endingVoronoiMapSimulation); // get the most representative Voronoï map, using d3-voronoi-map's static* computation feature
+goToFinalState(endingVoronoiMapSimulation); // get the most representative Voronoï map, using d3-voronoi-map's *static* computation feature
 
 var voronoiMapTween = d3.voronoiMapTween(startingVoronoiMapSimulation, endingVoronoiMapSimulation);
 var voronoiMapInterpolator = voronoiMapTween.mapInterpolator(); // interpolator of the Voronoi maps
@@ -95,11 +95,19 @@ Returns a function which is the interpolator between the starting Voronoï map a
 - `mapInterpolator(1)` returns a Voronoï map \_similar\*\_ to `endingVoronoiMapSimluation.state().polygons`; there is no polygon for data exclusively in the <i>startingVoronoiMapSimluation</i>
 - else, returns an intermediate Voronoï map inbetween the starting and ending Voronoï maps for any other value within `]0,1[`
 
+For each polygon `p`, `p.site` gives access to the interpolated site and its caracteristics:
+
+- `p.site.key` is the key, retrieved from either [_startingKey_](#voronoiMapTween_startingKey) or [_endingKey_](#voronoiMapTween_endingKey), and which allows to make the correspondance between starting and ending data
+- `p.site.interpolatedX` and `p.site.interpolatedY` are its interpolate position
+- `p.site.tweenType`, in `[ENTER_TWIN_TYPE, UPDATE_TWEEN_TYPE, EXIT_TWEEN_TYPE]`, defines if the site handles a entering/updating/exiting data
+- `p.site.interpolatedDataWeight` is the interpolated weight of the underlying data
+- `p.site.startingData` and `p.site.endingData` references the starting and ending data; may be null if the site corresponds to a datum only available in the ending data set or only in the ending data set
+
 <a name="voronoiMapTween_startingKey" href="#voronoiMapTween_startingKey">#</a> <i>voronoiMapTween</i>.<b>startingKey</b>([<i>key</i>])
 
-In oredr to make the correpondance between the starting and ending polygon of a single datum, we assigns each starting polygon/cell with their respective datum's key.
+In order to make the correspondance between the starting and ending polygon of a single datum, we assigns each starting polygon/cell with their respective datum's key. Starting and ending keys may be distinct.
 
-Starting and ending keys may be distinct. If _key_ is specified, sets the _key_ accessor. If _key_ is not specified, returns the current _key_ accessor, which defaults to:
+If _key_ is specified, sets the _key_ accessor. If _key_ is not specified, returns the current _key_ accessor, which defaults to:
 
 ```js
 function key(d) {
@@ -126,7 +134,7 @@ By default, we consider the starting and ending Voronoï maps having the same cl
 - `ƒ(1)` returns the ending clipping polygon
 - else returns an intermediate polygon inbetween the satrting and ending polygon for any other value within `]0,1[`
 
-As a simple first example, if the starting and ending clipping polygons are squares of different sizes, the clipping polygon may look like:
+As a simple first example, if the starting and ending clipping polygons are squares of different sizes, the _clipInterpolator_ may look like:
 
 ```js
 const startingSize = 50;
@@ -148,15 +156,14 @@ voronoiMapTween.clipInterpolator(ƒ);
 
 Note: if the starting and ending clipping polygons are of the same kind (e.g. a square, a disc) but with distinct sizes (as in the above example), you can try to use a static clipping polygon, and then <em>scale</em> the svg/paths.
 
-As a second example, for more complexe use cases, you can provide an interpolator using [flubber](https://github.com/veltman/flubber):
+As a second example, for more complexe use cases, you can provide a _clipInterpolator_ using [flubber](https://github.com/veltman/flubber):
 
 ```js
-const startingClippingPolygon = ...;
-const endingClippingPolygon = ...;
+const startingClippingPolygon = [...]; // an array of 2D points, ordered counterclockwise, defining a convex shape
+const endingClippingPolygon = [...]; // another array of 2D points
+const ƒ = flubber.interpolate(startingClippingPolygon, endingClippingPolygon, {string: false}); // {string:false} produces an array of 2D points
 
-voronoiMapTween.clipInterpolator(flubber.interpolate(startingClippingPolygon, endingClippingPolygon, {string: false, maxSegmentLength: 50}););
-// be warn that currently keeping maxSegmentLength to its default value (i.e. 10) or setting it to a small value may produce invalid path (with NaN coordinates)
-// more investigations required to know if this is a d3-weighted-voronoi issue
+voronoiMapTween.clipInterpolator(ƒ);
 ```
 
 ## Dependencies
