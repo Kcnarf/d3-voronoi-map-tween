@@ -181,15 +181,3 @@ voronoiMapTween.clipInterpolator(ƒ);
 ## Semantic Versioning
 
 d3-voronoi-map-tween attempts to follow [semantic versioning](https://semver.org) and bump major version only when backward incompatible changes are released.
-
-## Testing
-
-In order to test the code
-
-```sh
-git clone https://github.com/Kcnarf/d3-voronoi-map-tween.git
-[...]
-yarn install
-[...]
-yarn test
-```
