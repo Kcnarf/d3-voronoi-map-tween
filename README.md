@@ -6,7 +6,7 @@ This D3 plugin allows to animate back and forth between two [d3-voronoi-map](htt
 
 Considering the data coming from either the starting data set or the ending data set, each single datum has a corresponding cell in the starting Voronoï map and another in the ending Voronoï map. The objective of the plugin is to provide a way (i.e. an interpolator function) to smoothly interpolate between the starting cell and the ending cell of each data.
 
-To do so, the algorithm does not interpolate polygons associated to each single datum in order to no have a mess of overlapping cells (cf. [this easy-but-unsatisfying attempt](https://bl.ocks.org/Kcnarf/5d4f70d906bc2cc84cd8d7b2559a49c0)). But it rather interpolates the characteristics of the sites producing each polygon and then compute a Voronoï map of these interpolated sites (thanks to [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi)). It also takes care of cells found only in the starting Voronoï map (data only available in the startingd data set) or found only in the ending Voronoï map (data only in the ending data set).
+To do so, the algorithm does not interpolate polygons associated to each single datum in order to no have a mess of overlapping cells (cf. [this easy-but-unsatisfying attempt](https://bl.ocks.org/Kcnarf/5d4f70d906bc2cc84cd8d7b2559a49c0)). But it rather interpolates the characteristics of the sites producing each polygon and then compute a Voronoï map of these interpolated sites (thanks to [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi)). It also takes care of cells found only in the starting Voronoï map (data only available in the starting data set) or found only in the ending Voronoï map (data only in the ending data set).
 
 Because a picture is worth a thousand words:
 
@@ -17,15 +17,15 @@ In this animation:
 - <span style="color:steelblue">blue</span> cells are cells available in both the starting and ending Voronoï maps, i.e. data both in the starting and ending sets; these cells smoothly evolve in order to reflect their starting and ending weights, which may be distinct
 - <span style="color:pink">red </span>cells are cells available only in the starting Voronoï map, i.e. data only in the starting data set; these cells smoothly disappear
 - <span style="color:lightgreen">green</span> cells are cells available only in the ending Voronoï map, i.e. data only in the ending data set; these cells smoothly appear
-- _'evolving overall size'_ demonstrates that the plugin can handle animation between disks of distinct sizes; enabling it makes the ending overall disk smaller than the starting disk
-- _'evolving overall shape'_ demonstrates that the plugin can handle animation between distinct shapes; enabling it makes the ending overall shape a pentagone; here, the smooth interpolation between the two shapes is handled with [flubber](https://github.com/veltman/flubber)
+- _'evolving overall size'_ demonstrates that the plugin can handle animation between disks of distinct sizes; when enabled, the ending overall disk is smaller than the starting disk
+- _'evolving overall shape'_ demonstrates that the plugin can handle animation between distinct shapes; when enabled, the ending overall shape is a pentagone; here, the smooth interpolation between the two shapes (circle and pentagon) is handled with [flubber](https://github.com/veltman/flubber)
 - _'show internals'_ shows how the cells' sites evolve (they either appear/disappear/evolve in location and weight)
 
 Available only for **d3-voronoi-map v2**.
 
 ## Context
 
-Animating a Voronoï map is already possible with the [live arrangement](https://github.com/Kcnarf/d3-voronoi-map#live) feature of the [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) plugin. This feature is sufficient to handle updates of data (displayed as evolving cell areas) for a static overall shape, but can't handle addition or deletion of data (deletion = data no longer existing at the end of the animation, addition = data not existing at the begining of the animation) and can't handle an evolving overall shape (e.g. a shape being bigger , representing the increase of the total amount).
+Animating a Voronoï map is already possible with the [live arrangement](https://github.com/Kcnarf/d3-voronoi-map#live) feature of the [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) plugin. This feature is sufficient to handle updates of data (displayed as evolving cell areas) for a static overall shape, but can't handle addition or deletion of data (deletion = data no longer existing at the end of the animation, addition = data not existing at the begining of the animation) and can't handle an evolving overall shape (e.g. a shape becoming bigger, representing the increase of the total amount).
 
 This is where the d3-voronoi-map-tween comes in:
 
@@ -45,7 +45,7 @@ This is where the d3-voronoi-map-tween comes in:
 
 ## Installing
 
-<!--If you use NPM, `npm install d3-voronoi-map-tween`. Otherwise, load `https://rawcdn.githack.com/Kcnarf/d3-voronoi-map-tween/v0.0.1/build/d3-voronoi-treemap.js` --> Load `https://raw.githack.com/Kcnarf/d3-voronoi-map-tween/master/build/d3-voronoi-map-tween.js`(or its `d3-voronoi-map-tween.min.js` version) to make it available in AMD, CommonJS, or vanilla environments. In vanilla, you must load the [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi) and [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) plugins prior to this one, and a d3 global is exported:
+<!--If you use NPM, `npm install d3-voronoi-map-tween`. Otherwise, load `https://rawcdn.githack.com/Kcnarf/d3-voronoi-map-tween/v0.0.1/build/d3-voronoi-treemap.js` --> Load `https://raw.githack.com/Kcnarf/d3-voronoi-map-tween/master/build/d3-voronoi-map-tween.js` (or its `d3-voronoi-map-tween.min.js` version) to make it available in AMD, CommonJS, or vanilla environments. In vanilla, you must load the [d3-weighted-voronoi](https://github.com/Kcnarf/d3-weighted-voronoi) and [d3-voronoi-map](https://github.com/Kcnarf/d3-voronoi-map) plugins prior to this one, and a d3 global is exported:
 
 ```html
 <script src="https://d3js.org/d3.v6.min.js"></script>
@@ -102,19 +102,19 @@ Returns a function which is the interpolator between the starting Voronoï map a
 - `mapInterpolator(1)` returns a Voronoï map _similar\*_ to `endingVoronoiMapSimluation.state().polygons`; there is no polygon for data exclusively in the <i>startingVoronoiMapSimluation</i>
 - else, returns an intermediate Voronoï map inbetween the starting and ending Voronoï maps for any other value within `]0,1[`
 
-For each computed polygon `p`, `p.site` gives access to the interpolated site and its caracteristics:
+For each computed polygon `p`, `p.site.originalObject` gives access to the interpolated site and its caracteristics:
 
-- `p.site.key` is the key, retrieved from either [_startingKey_](#voronoiMapTween_startingKey) or [_endingKey_](#voronoiMapTween_endingKey), and which allows to make the correspondance between starting and ending data
-- `p.site.interpolatedX` and `p.site.interpolatedY` are its interpolate positions
-- `p.site.tweenType`, in `[ENTER_TWIN_TYPE, UPDATE_TWEEN_TYPE, EXIT_TWEEN_TYPE]`, defines if the site handles a entering/updating/exiting data
-- `p.site.interpolatedDataWeight` is the interpolated weight of the underlying data
-- `p.site.startingData` and `p.site.endingData` references the starting and ending data; one of the two references may be null if the site corresponds to a datum only available in the starting data set or only in the ending data set
+- `p.site.originalObject.key` is the key, retrieved from either [_startingKey_](#voronoiMapTween_startingKey) or [_endingKey_](#voronoiMapTween_endingKey), and which allows to make the correspondance between starting and ending data
+- `p.site.originalObject.interpolatedX` and `p.site.originalObject.interpolatedY` are its interpolate coordinates
+- `p.site.originalObject.interpolatedDataWeight` is the interpolated weight of the underlying data
+- `p.site.originalObject.tweenType`, in `[ENTER_TWIN_TYPE, UPDATE_TWEEN_TYPE, EXIT_TWEEN_TYPE]`, defines if the site handles a entering/updating/exiting data
+- `p.site.originalObject.startingData` and `p.site.endingData` reference the starting and ending data; one of the two references may be null if the site corresponds to a datum only available in the starting data set or only in the ending data set
 
 <a name="voronoiMapTween_startingKey" href="#voronoiMapTween_startingKey">#</a> <i>voronoiMapTween</i>.<b>startingKey</b>([<i>key</i>])
 
-In order to make the correspondance between the starting and ending polygon of a single datum, each starting polygon/cell is assigned a key, retrieved from its underlying datum throught the starting _key_ accessor. The starting key accessor and the ending key accessor may be distincts.
+In order to make the correspondance between the starting and ending cells of a single datum, each starting cell is assigned a key, retrieved from its underlying datum throught the starting _key_ accessor. The starting key accessor and the ending key accessor may be distincts.
 
-If _key_ is specified, sets the _key_ accessor, which must be a function ƒ accepting a parameter wich reference a datum (i.e. a element of the starting data set used to cimpoute the starting Voronoï map). If _key_ is not specified, returns the current _key_ accessor, which defaults to:
+If _key_ is specified, sets the _key_ accessor, which must be a function accepting a parameter wich reference a datum (i.e. a element of the starting data set used to compute the starting Voronoï map). If _key_ is not specified, returns the current _key_ accessor, which defaults to:
 
 ```js
 function key(d) {
@@ -124,7 +124,7 @@ function key(d) {
 
 <a name="voronoiMapTween_endingKey" href="#voronoiMapTween_endingKey">#</a> <i>voronoiMapTween</i>.<b>endingKey</b>([<i>key</i>])
 
-Same as [_startingKey_](#voronoiMapTween_startingKey), but for the ending polygons/cells.
+Same as [_startingKey_](#voronoiMapTween_startingKey), but for the ending cells.
 
 <a name="voronoiMapTween_clipInterpolator" href="#voronoiMapTween_clipInterpolator">#</a> <i>voronoiMapTween</i>.<b>clipInterpolator</b>([<i>ƒ</i>])
 
@@ -164,7 +164,7 @@ voronoiMapTween.clipInterpolator(ƒ);
 
 Note: if the starting and ending clipping polygons are of the same kind (e.g. a square, a disc) but with distinct sizes (as in the above example), you can try to use a static clipping polygon, and then <em>scale</em> the svg/paths.
 
-As a second example, for more complexe use cases where the shape evolves, you can provide a _clipInterpolator_ using [flubber](https://github.com/veltman/flubber):
+As a second example, for more complexe use cases where the starting and ending shapes are not of the same kind (e.g. a circle and a pentagon), you can provide a _clipInterpolator_ using [flubber](https://github.com/veltman/flubber):
 
 ```js
 const startingClippingPolygon = [...]; // an array of 2D points, ordered counterclockwise, defining a convex shape

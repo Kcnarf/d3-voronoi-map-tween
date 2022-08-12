@@ -10,14 +10,13 @@ tape('voronoiMapTween should provide tween types', function (test) {
 });
 
 tape('voronoiMapTween(...) should set the expected defaults', function (test) {
-  const startingData = [{ id: 0, weight: 1 }],
-    endingData = [{ id: 0, weight: 1 }],
-    voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation(startingData).stop(),
-    voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation(endingData).stop();
+  const datum = { id: 0, weight: 1 },
+    voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([datum]).stop(),
+    voronoiMapSimulation1 = d3VoronoiMap.voronoiMapSimulation([datum]).stop();
   const voronoiMapTween = d3VoronoiMapTween.voronoiMapTween(voronoiMapSimulation0, voronoiMapSimulation1);
 
-  test.equal(voronoiMapTween.startingKey()(startingData[0]), 0);
-  test.equal(voronoiMapTween.endingKey()(startingData[0]), 0);
+  test.equal(voronoiMapTween.startingKey()(datum), 0);
+  test.equal(voronoiMapTween.endingKey()(datum), 0);
   test.equal(voronoiMapTween.clipInterpolator()(0), voronoiMapSimulation0.clip());
   test.end();
 });
@@ -53,43 +52,44 @@ tape('voronoiMapTween.endingKey(...) should set specified key accessor', functio
 });
 
 tape('voronoiMapTween.mapInterpolator()', function (test) {
-  tape('voronoiMapTween.mapInterpolator() should idenditify added/entered, exited/deleted, and updated data', function (
-    test
-  ) {
-    const deletedData = { id: 0, weight: 1 },
-      updatedData = { id: 1, weight: 1 },
-      addedData = { id: 2, weight: 1 },
-      voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([deletedData, updatedData]).stop(),
-      voronoiMapSimulation1 = d3VoronoiMap
-        .voronoiMapSimulation([updatedData, addedData])
-        .clip(voronoiMapSimulation0.clip()) // exact same clipping polygon, deactivate/bypass Flubber
-        .stop();
-    const voronoiMapInterpolator = d3VoronoiMapTween
-      .voronoiMapTween(voronoiMapSimulation0, voronoiMapSimulation1)
-      .mapInterpolator();
+  tape(
+    'voronoiMapTween.mapInterpolator() should identify added/entered, exited/deleted, and updated data',
+    function (test) {
+      const deletedData = { id: 0, weight: 1 },
+        updatedData = { id: 1, weight: 1 },
+        addedData = { id: 2, weight: 1 },
+        voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([deletedData, updatedData]).stop(),
+        voronoiMapSimulation1 = d3VoronoiMap
+          .voronoiMapSimulation([updatedData, addedData])
+          .clip(voronoiMapSimulation0.clip()) // exact same clipping polygon, deactivate/bypass Flubber
+          .stop();
+      const voronoiMapInterpolator = d3VoronoiMapTween
+        .voronoiMapTween(voronoiMapSimulation0, voronoiMapSimulation1)
+        .mapInterpolator();
 
-    const interpolatedVoronoiMapAt0 = voronoiMapInterpolator(0);
-    const polygonOfDeletedDataAt0 = interpolatedVoronoiMapAt0.find(function (p) {
-      return p.site.originalObject.startingData === deletedData;
-    });
-    const polygonOfUpdatedDataAt0 = interpolatedVoronoiMapAt0.find(function (p) {
-      return p.site.originalObject.startingData === updatedData;
-    });
-    test.equal(polygonOfDeletedDataAt0.site.originalObject.tweenType, d3VoronoiMapTween.EXIT_TWEEN_TYPE);
-    test.equal(polygonOfUpdatedDataAt0.site.originalObject.tweenType, d3VoronoiMapTween.UPDATE_TWEEN_TYPE);
+      const interpolatedVoronoiMapAt0 = voronoiMapInterpolator(0);
+      const polygonOfDeletedDataAt0 = interpolatedVoronoiMapAt0.find(function (p) {
+        return p.site.originalObject.startingData === deletedData;
+      });
+      const polygonOfUpdatedDataAt0 = interpolatedVoronoiMapAt0.find(function (p) {
+        return p.site.originalObject.startingData === updatedData;
+      });
+      test.equal(polygonOfDeletedDataAt0.site.originalObject.tweenType, d3VoronoiMapTween.EXIT_TWEEN_TYPE);
+      test.equal(polygonOfUpdatedDataAt0.site.originalObject.tweenType, d3VoronoiMapTween.UPDATE_TWEEN_TYPE);
 
-    const interpolatedVoronoiMapAt1 = voronoiMapInterpolator(1);
-    const polygonOfUpdatedDataAt1 = interpolatedVoronoiMapAt1.find(function (p) {
-      return p.site.originalObject.endingData === updatedData;
-    });
-    const polygonOfAddedDataAt1 = interpolatedVoronoiMapAt1.find(function (p) {
-      return p.site.originalObject.endingData === addedData;
-    });
-    test.equal(polygonOfUpdatedDataAt1.site.originalObject.tweenType, d3VoronoiMapTween.UPDATE_TWEEN_TYPE);
-    test.equal(polygonOfAddedDataAt1.site.originalObject.tweenType, d3VoronoiMapTween.ENTER_TWEEN_TYPE);
+      const interpolatedVoronoiMapAt1 = voronoiMapInterpolator(1);
+      const polygonOfUpdatedDataAt1 = interpolatedVoronoiMapAt1.find(function (p) {
+        return p.site.originalObject.endingData === updatedData;
+      });
+      const polygonOfAddedDataAt1 = interpolatedVoronoiMapAt1.find(function (p) {
+        return p.site.originalObject.endingData === addedData;
+      });
+      test.equal(polygonOfUpdatedDataAt1.site.originalObject.tweenType, d3VoronoiMapTween.UPDATE_TWEEN_TYPE);
+      test.equal(polygonOfAddedDataAt1.site.originalObject.tweenType, d3VoronoiMapTween.ENTER_TWEEN_TYPE);
 
-    test.end();
-  });
+      test.end();
+    }
+  );
 
   tape('voronoiMapTween.mapInterpolator() should correctly map data thanks to starting/ending keys', function (test) {
     const dataOnlyAtStart = { identifier: 0, weight: 1 },
@@ -97,7 +97,7 @@ tape('voronoiMapTween.mapInterpolator()', function (test) {
       data2AtStart = { identifier: 2, weight: 1 },
       data1AtEnd = { idPrime: 1, weight: 1 },
       data2AtEnd = { idPrime: 2, weight: 1 },
-      dataOnlyAtEnd = { identifier: 3, weight: 1 },
+      dataOnlyAtEnd = { idPrime: 3, weight: 1 },
       startingKey = function (d) {
         return d.identifier;
       },
@@ -107,7 +107,8 @@ tape('voronoiMapTween.mapInterpolator()', function (test) {
       voronoiMapSimulation0 = d3VoronoiMap.voronoiMapSimulation([dataOnlyAtStart, data1AtStart, data2AtStart]).stop(),
       voronoiMapSimulation1 = d3VoronoiMap
         .voronoiMapSimulation([data1AtEnd, data2AtEnd, dataOnlyAtEnd])
-        .clip(voronoiMapSimulation0.clip()); // exact same clipping polygon, deactivate/bypass Flubber.stop();
+        .clip(voronoiMapSimulation0.clip()) // exact same clipping polygon, deactivate/bypass Flubber.stop();
+        .stop();
     const voronoiMapInterpolator = d3VoronoiMapTween
       .voronoiMapTween(voronoiMapSimulation0, voronoiMapSimulation1)
       .startingKey(startingKey)
